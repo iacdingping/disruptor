@@ -41,34 +41,37 @@ ext {
 }
 
 sourceSets {
-    perf.java.srcDir 'src/perftest/java'
+    perf.java.srcDir file('src/perftest/java')
 }
 
-eclipse.classpath.plusConfigurations += sourceSets.perf.compileClasspath
-
-idea.module {
-    testSourceDirs += sourceSets.perf.allSource.getSrcDirs()
-    scopes.TEST.plus += sourceSets.perf.compileClasspath
-}
+//eclipse.classpath.plusConfigurations += sourceSets.perf.compileClasspath
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testCompile 'junit:junit:4.5', 
+    testCompile 'junit:junit:4.5',
                 'org.jmock:jmock-junit4:2.5.1', 
                 'org.jmock:jmock-legacy:2.5.1'
+    
     perfCompile 'org.hdrhistogram:HdrHistogram:1.2.1'
+}
+
+idea.module {
+    testSourceDirs += sourceSets.perf.allSource.getSrcDirs()
+    scopes.TEST.plus += [ configurations.perfCompile ]
 }
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-tasks.withType(Compile) {
-    options.compilerArgs << '-XDignore.symbol.file' << '-Xlint:unchecked' << '-Xlint:deprecation'
-    options.debug = true
+
+compileJava {
+    // Suppress warnings about using Unsafe and sun.misc
+    options.compilerArgs << '-XDignore.symbol.file'
     options.fork = true
+    options.debug = true
     options.forkOptions.executable = javaCompilerExecutable
     options.warnings = false
 }
@@ -176,7 +179,7 @@ task perfJar(type: Jar) {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
+    gradleVersion = '2.5'
 }
 
 class Version {
